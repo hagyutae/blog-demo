@@ -30,7 +30,7 @@ public class User implements Serializable {
             @NonNull String nickname,
             @NonNull Instant createdAt
     ) {
-        validate(id, password, email, nickname, createdAt);
+        validate(id, password, email, nickname);
         this.id = id;
         this.email = email;
         this.nickname = nickname;
@@ -58,7 +58,7 @@ public class User implements Serializable {
         return new User(this.id, encryptPassword(newPassword), this.email, this.nickname, this.createdAt);
     }
 
-    private void validate(String id, String password, String email, String nickname, Instant createdAt) {
+    private void validate(String id, String password, String email, String nickname) {
         validateId(id);
         validatePassword(password);
         validateEmail(email);

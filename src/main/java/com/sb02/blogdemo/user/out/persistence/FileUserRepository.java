@@ -1,7 +1,10 @@
 package com.sb02.blogdemo.user.out.persistence;
 
+import com.sb02.blogdemo.exception.LoadDataFileFailure;
+import com.sb02.blogdemo.exception.SaveDataFileFailure;
 import com.sb02.blogdemo.user.domain.entity.User;
-import com.sb02.blogdemo.user.domain.exception.UserDataFileLost;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class FileUserRepository implements UserRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileUserRepository.class);
+
     private final Path dataPath;
     private final Map<String, User> data;
 
@@ -34,7 +39,7 @@ public class FileUserRepository implements UserRepository {
             try {
                 Files.createDirectories(entityDirPath);
             } catch (IOException e) {
-                throw new UserDataFileLost("Cannot access user data directory: " + e);
+                throw new LoadDataFileFailure("Cannot access user data directory: " + e);
             }
         }
     }
@@ -47,9 +52,32 @@ public class FileUserRepository implements UserRepository {
                 FileInputStream fis = new FileInputStream(dataPath.toFile());
                 ObjectInputStream ois = new ObjectInputStream(fis)
         ) {
-            return (ConcurrentHashMap<String, User>) ois.readObject();
+            Object obj = ois.readObject();
+            if (obj instanceof ConcurrentHashMap<?, ?> map) {
+
+                // 타입 안전성 검증을 위한 새로운 맵 생성
+                ConcurrentHashMap<String, User> result = new ConcurrentHashMap<>();
+
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (entry.getKey() instanceof String && entry.getValue() instanceof User) {
+                        result.put((String) entry.getKey(), (User) entry.getValue());
+                    } else {
+                        String errMsg = "User data file contains invalid types";
+                        logger.error(errMsg);
+                        throw new LoadDataFileFailure(errMsg);
+                    }
+                }
+
+                return result;
+            } else {
+                String errMsg = "User data file is not constructed by a ConcurrentHashMap object";
+                logger.error(errMsg);
+                throw new LoadDataFileFailure(errMsg);
+            }
         } catch (IOException | ClassNotFoundException e) {
-            throw new UserDataFileLost("Cannot read user data: " + e);
+            String errMsg = "Cannot load user data: " + e;
+            logger.error(errMsg);
+            throw new LoadDataFileFailure(errMsg);
         }
     }
 
@@ -65,7 +93,7 @@ public class FileUserRepository implements UserRepository {
         ) {
             oos.writeObject(data);
         } catch (IOException e) {
-            throw new UserDataFileLost("Cannot save user data: " + e);
+            throw new SaveDataFileFailure("Cannot save user data: " + e);
         }
     }
 
