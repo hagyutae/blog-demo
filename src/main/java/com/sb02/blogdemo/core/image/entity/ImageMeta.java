@@ -18,13 +18,13 @@ public class ImageMeta implements Serializable {
     private String originalName;
     private String extension;
     private String path;
-    private Long size;
+    private long size;
     private Instant uploadedAt;
 
     private ImageMeta(
             String fileName,
             String path,
-            Long size,
+            long size,
             Instant uploadedAt
     ) {
         this.id = UUID.randomUUID();
@@ -35,7 +35,7 @@ public class ImageMeta implements Serializable {
         this.uploadedAt = uploadedAt;
     }
 
-    public static ImageMeta create(String fileName, String path, Long size) {
+    public static ImageMeta create(String fileName, String path, long size) {
         Validator.validate(fileName);
         return new ImageMeta(fileName, path, size, Instant.now());
     }

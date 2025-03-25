@@ -1,17 +1,15 @@
 package com.sb02.blogdemo.adapter.inbound.post;
 
 import com.sb02.blogdemo.auth.RequiresAuth;
-import com.sb02.blogdemo.core.posting.usecase.PostService;
-import com.sb02.blogdemo.core.posting.usecase.PublishPostCommand;
-import com.sb02.blogdemo.core.posting.usecase.PublishPostResult;
+import com.sb02.blogdemo.core.posting.usecase.*;
+import com.sb02.blogdemo.utils.TimeUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -39,6 +37,44 @@ public class PostController {
                 publishPostRequest.content(),
                 userId,
                 publishPostRequest.tags()
+        );
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<RetrievedPost> retrieveById(@PathVariable UUID postId) {
+        RetrievePostResult result = postService.retrievePostById(postId);
+        return ResponseEntity.ok(convertToRetrievedPost(result));
+    }
+
+    private RetrievedPost convertToRetrievedPost(RetrievePostResult result) {
+        return new RetrievedPost(
+                result.postId().toString(),
+                result.title(),
+                result.content(),
+                result.authorId(),
+                result.authorNickname(),
+                TimeUtils.formatedTimeString(result.createdAt()),
+                TimeUtils.formatedTimeString(result.updatedAt()),
+                result.tags()
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<RetrievePostsResponse> retrievePosts(
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size
+    ) {
+        RetrievePaginatedPostsCommand command = new RetrievePaginatedPostsCommand(page, size);
+        RetrievePostsResult result = postService.retrievePaginatedPosts(command);
+
+        return ResponseEntity.ok(convertToRetrievePostsResponse(result));
+    }
+
+    private RetrievePostsResponse convertToRetrievePostsResponse(RetrievePostsResult result) {
+        return new RetrievePostsResponse(
+                result.posts().stream().map(this::convertToRetrievedPost).toList(),
+                result.totalPages(),
+                result.currentPage()
         );
     }
 
