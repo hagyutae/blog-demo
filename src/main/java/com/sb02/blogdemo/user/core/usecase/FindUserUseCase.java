@@ -1,4 +1,4 @@
-package com.sb02.blogdemo.user.domain.usecase;
+package com.sb02.blogdemo.user.core.usecase;
 
 public interface FindUserUseCase {
     boolean existsById(String userId);

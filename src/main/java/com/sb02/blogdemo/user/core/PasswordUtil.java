@@ -1,4 +1,4 @@
-package com.sb02.blogdemo.user.domain;
+package com.sb02.blogdemo.user.core;
 
 import org.mindrot.jbcrypt.BCrypt;
 

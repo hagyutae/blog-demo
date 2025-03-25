@@ -1,11 +1,11 @@
-package com.sb02.blogdemo.user.domain.usecase;
+package com.sb02.blogdemo.user.core.usecase;
 
 import com.sb02.blogdemo.auth.JwtUtil;
-import com.sb02.blogdemo.user.domain.PasswordUtil;
-import com.sb02.blogdemo.user.domain.entity.User;
-import com.sb02.blogdemo.user.domain.exception.UserAlreadyExists;
-import com.sb02.blogdemo.user.domain.exception.UserLoginFailed;
-import com.sb02.blogdemo.user.out.persistence.UserRepository;
+import com.sb02.blogdemo.user.core.PasswordUtil;
+import com.sb02.blogdemo.user.core.entity.User;
+import com.sb02.blogdemo.user.core.exception.UserAlreadyExists;
+import com.sb02.blogdemo.user.core.exception.UserLoginFailed;
+import com.sb02.blogdemo.user.core.port.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     public static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final JwtUtil jwtUtil;
 
     @Override
@@ -29,12 +29,7 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExists(errMsg);
         }
 
-        User user = User.builder()
-                .id(command.id())
-                .password(command.password())
-                .email(command.email())
-                .nickname(command.nickname())
-                .build();
+        User user = User.create(command.id(), command.password(), command.email(), command.nickname());
         userRepository.save(user);
     }
 

@@ -1,8 +1,9 @@
-package com.sb02.blogdemo.user.out.persistence;
+package com.sb02.blogdemo.user.adapter.out.persistence;
 
 import com.sb02.blogdemo.exception.LoadDataFileFailure;
 import com.sb02.blogdemo.exception.SaveDataFileFailure;
-import com.sb02.blogdemo.user.domain.entity.User;
+import com.sb02.blogdemo.user.core.port.UserRepositoryPort;
+import com.sb02.blogdemo.user.core.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class FileUserRepository implements UserRepository {
+public class FileUserRepository implements UserRepositoryPort {
 
     private static final Logger logger = LoggerFactory.getLogger(FileUserRepository.class);
 

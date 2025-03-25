@@ -1,9 +1,9 @@
-package com.sb02.blogdemo.user.in;
+package com.sb02.blogdemo.user.adapter.in;
 
 import com.sb02.blogdemo.ErrorResponse;
-import com.sb02.blogdemo.user.domain.exception.UserAlreadyExists;
-import com.sb02.blogdemo.user.domain.exception.UserException;
-import com.sb02.blogdemo.user.domain.exception.UserLoginFailed;
+import com.sb02.blogdemo.user.core.exception.UserAlreadyExists;
+import com.sb02.blogdemo.user.core.exception.UserException;
+import com.sb02.blogdemo.user.core.exception.UserLoginFailed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;

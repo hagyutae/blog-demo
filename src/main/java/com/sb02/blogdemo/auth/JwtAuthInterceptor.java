@@ -1,6 +1,6 @@
 package com.sb02.blogdemo.auth;
 
-import com.sb02.blogdemo.user.domain.usecase.FindUserUseCase;
+import com.sb02.blogdemo.user.core.usecase.FindUserUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

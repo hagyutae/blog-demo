@@ -1,10 +1,8 @@
-package com.sb02.blogdemo.user.domain.entity;
+package com.sb02.blogdemo.user.core.entity;
 
-import com.sb02.blogdemo.user.domain.PasswordUtil;
-import com.sb02.blogdemo.user.domain.exception.UserRegisterException;
-import lombok.Builder;
+import com.sb02.blogdemo.user.core.PasswordUtil;
+import com.sb02.blogdemo.user.core.exception.UserRegisterException;
 import lombok.Getter;
-import lombok.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -17,18 +15,18 @@ public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @NonNull private final String id;
-    @NonNull private final String password;
-    @NonNull private final String email;
-    @NonNull private final String nickname;
-    @NonNull private final Instant createdAt;
+    private String id;
+    private String password;
+    private String email;
+    private String nickname;
+    private Instant createdAt;
 
     private User(
-            @NonNull String id,
-            @NonNull String password,
-            @NonNull String email,
-            @NonNull String nickname,
-            @NonNull Instant createdAt
+            String id,
+            String password,
+            String email,
+            String nickname,
+            Instant createdAt
     ) {
         validate(id, password, email, nickname);
         this.id = id;
@@ -38,24 +36,8 @@ public class User implements Serializable {
         this.password = encryptPassword(password);
     }
 
-    @Builder
     public static User create(String id, String password, String email, String nickname) {
         return new User(id, password, email, nickname, Instant.now());
-    }
-
-    public User updateEmail(String newEmail) {
-        validateEmail(newEmail);
-        return new User(this.id, this.password, newEmail, this.nickname, this.createdAt);
-    }
-
-    public User updateNickname(String newNickname) {
-        validateNickname(newNickname);
-        return new User(this.id, this.password, this.email, newNickname, this.createdAt);
-    }
-
-    public User updatePassword(String newPassword) {
-        validatePassword(newPassword);
-        return new User(this.id, encryptPassword(newPassword), this.email, this.nickname, this.createdAt);
     }
 
     private void validate(String id, String password, String email, String nickname) {

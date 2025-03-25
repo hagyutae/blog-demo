@@ -1,9 +1,10 @@
-package com.sb02.blogdemo.user.in;
+package com.sb02.blogdemo.user.adapter.in;
 
-import com.sb02.blogdemo.user.domain.usecase.LoginUserCommand;
-import com.sb02.blogdemo.user.domain.usecase.LoginUserResult;
-import com.sb02.blogdemo.user.domain.usecase.RegisterUserCommand;
-import com.sb02.blogdemo.user.domain.usecase.UserService;
+import com.sb02.blogdemo.user.core.usecase.LoginUserCommand;
+import com.sb02.blogdemo.user.core.usecase.LoginUserResult;
+import com.sb02.blogdemo.user.core.usecase.RegisterUserCommand;
+import com.sb02.blogdemo.user.core.usecase.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserRegistrationResponse> registerUser(@RequestBody UserRegistrationRequest requestBody) {
+    public ResponseEntity<UserRegistrationResponse> registerUser(@RequestBody @Valid UserRegistrationRequest requestBody) {
         RegisterUserCommand command = createRegisterUserCommand(requestBody);
         userService.register(command);
 
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> loginUser(@RequestBody UserLoginRequest requestBody) {
+    public ResponseEntity<UserLoginResponse> loginUser(@RequestBody @Valid UserLoginRequest requestBody) {
         LoginUserCommand command = createLoginUserCommand(requestBody);
         LoginUserResult result = userService.login(command);
 
