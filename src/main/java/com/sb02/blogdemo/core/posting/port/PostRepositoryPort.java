@@ -12,4 +12,5 @@ public interface PostRepositoryPort {
     Optional<Post> findById(UUID postId);
     List<Post> findAll(long page, long size, boolean newestFirst);
     int countAll();
+    void delete(UUID postId);
 }

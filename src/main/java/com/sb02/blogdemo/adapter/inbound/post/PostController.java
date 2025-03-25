@@ -86,18 +86,32 @@ public class PostController {
             HttpServletRequest httpRequest
     ) {
         String userId = (String) httpRequest.getAttribute("userId");
-        UpdatePostCommand command = createUpdatePostCommand(postId, updatePostRequest);
-        postService.updatePost(command, userId);
+        UpdatePostCommand command = createUpdatePostCommand(postId, userId, updatePostRequest);
+        postService.updatePost(command);
 
         return ResponseEntity.ok(new UpdatePostResponse(true));
     }
 
-    private UpdatePostCommand createUpdatePostCommand(UUID postId, UpdatePostRequest updatePostRequest) {
+    private UpdatePostCommand createUpdatePostCommand(UUID postId, String userId, UpdatePostRequest updatePostRequest) {
         return new UpdatePostCommand(
+                userId,
                 postId,
                 updatePostRequest.title(),
                 updatePostRequest.content(),
                 updatePostRequest.tags()
         );
+    }
+
+    @DeleteMapping("/{postId}")
+    @RequiresAuth
+    public ResponseEntity<DeletePostResponse> deletePost(
+            @PathVariable UUID postId,
+            HttpServletRequest httpRequest
+    ) {
+        String userId = (String) httpRequest.getAttribute("userId");
+        DeletePostCommand command = new DeletePostCommand(userId, postId);
+        postService.deletePost(command);
+
+        return ResponseEntity.ok(new DeletePostResponse(true));
     }
 }

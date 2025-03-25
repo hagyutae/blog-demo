@@ -42,4 +42,10 @@ public class PostRepository extends SimpleFileRepository<UUID, Post> implements 
     public int countAll() {
         return data.size();
     }
+
+    @Override
+    public void delete(UUID postId) {
+        data.remove(postId);
+        saveData();
+    }
 }

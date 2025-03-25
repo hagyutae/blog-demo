@@ -6,7 +6,6 @@ import com.sb02.blogdemo.core.image.usecase.ImageService;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
 import com.sb02.blogdemo.core.posting.exception.InvalidPostAccess;
-import com.sb02.blogdemo.core.posting.exception.InvalidPostImageError;
 import com.sb02.blogdemo.core.posting.exception.PostNotFound;
 import com.sb02.blogdemo.core.posting.port.PostImageRepositoryPort;
 import com.sb02.blogdemo.core.posting.port.PostRepositoryPort;
@@ -73,8 +72,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void updatePost(UpdatePostCommand command, String requestUserId) {
+    public void updatePost(UpdatePostCommand command) {
         Post post = postRepository.findById(command.postId()).orElseThrow(() -> new PostNotFound("Post with id " + command.postId() + " not found"));
+
+        String requestUserId = command.requestUserId();
 
         if (!post.getAuthorId().equals(requestUserId)) {
             throw new InvalidPostAccess("User with id " + requestUserId + " does not have access to modifying post with id " + command.postId());
@@ -113,8 +114,15 @@ public class PostServiceImpl implements PostService {
                 .noneMatch(parsedImage.getImageId()::equals);
     }
 
-    private void deletePostImage(PostImage image) {
-        postImageRepository.delete(image.getId());
-        imageService.deleteImage(image.getImageId());
+    private void deletePostImage(PostImage postImage) {
+        postImageRepository.delete(postImage.getId());
+        imageService.deleteImage(postImage.getImageId());
+    }
+
+    @Override
+    public void deletePost(DeletePostCommand command) {
+        Post post = postRepository.findById(command.postId()).orElseThrow(() -> new PostNotFound("Post with id " + command.postId() + " not found"));
+        postImageRepository.retrieveImages(post.getId()).forEach(this::deletePostImage);
+        postRepository.delete(post.getId());
     }
 }
