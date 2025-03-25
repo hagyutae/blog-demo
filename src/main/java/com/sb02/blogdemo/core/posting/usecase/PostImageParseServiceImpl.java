@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
-public class PostImageServiceImpl implements PostImageService {
+public class PostImageParseServiceImpl implements PostImageParseService {
 
     private final FindImageUseCase findImageUseCase;
 

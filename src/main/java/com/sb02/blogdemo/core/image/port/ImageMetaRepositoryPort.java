@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface ImageMetaRepositoryPort {
     void saveImageMeta(ImageMeta imageMeta);
     Optional<ImageMeta> findById(UUID imageId);
+    void deleteImageMeta(UUID imageId);
 }

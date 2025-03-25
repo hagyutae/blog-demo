@@ -2,8 +2,11 @@ package com.sb02.blogdemo.core.posting.usecase;
 
 
 import com.sb02.blogdemo.adapter.outbound.user.UserRepository;
+import com.sb02.blogdemo.core.image.usecase.ImageService;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
+import com.sb02.blogdemo.core.posting.exception.InvalidPostAccess;
+import com.sb02.blogdemo.core.posting.exception.InvalidPostImageError;
 import com.sb02.blogdemo.core.posting.exception.PostNotFound;
 import com.sb02.blogdemo.core.posting.port.PostImageRepositoryPort;
 import com.sb02.blogdemo.core.posting.port.PostRepositoryPort;
@@ -18,15 +21,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
-    private final PostImageService postImageService;
+    private final PostImageParseService postImageParseService;
     private final PostRepositoryPort postRepository;
     private final PostImageRepositoryPort postImageRepository;
     private final UserRepository userRepository;
+    private final ImageService imageService;
 
     @Override
     public PublishPostResult publishPost(PublishPostCommand command) {
         Post post = Post.create(command.title(), command.content(), command.authorId(), command.tags());
-        List<PostImage> postImages = postImageService.parseImages(post.getId(), post.getContent());
+        List<PostImage> postImages = postImageParseService.parseImages(post.getId(), post.getContent());
         postRepository.save(post);
         postImageRepository.saveAll(postImages);
         return new PublishPostResult(post.getId());
@@ -66,5 +70,51 @@ public class PostServiceImpl implements PostService {
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );
+    }
+
+    @Override
+    public void updatePost(UpdatePostCommand command, String requestUserId) {
+        Post post = postRepository.findById(command.postId()).orElseThrow(() -> new PostNotFound("Post with id " + command.postId() + " not found"));
+
+        if (!post.getAuthorId().equals(requestUserId)) {
+            throw new InvalidPostAccess("User with id " + requestUserId + " does not have access to modifying post with id " + command.postId());
+        }
+
+        post.update(command.title(), command.content(), command.tags());
+        postRepository.save(post);
+
+        List<PostImage> parsedPostImages = postImageParseService.parseImages(post.getId(), post.getContent());
+        List<PostImage> existingPostImages = postImageRepository.retrieveImages(post.getId());
+
+        processPostImages(parsedPostImages, existingPostImages);
+    }
+
+    private void processPostImages(List<PostImage> parsedPostImages, List<PostImage> existingPostImages) {
+        // 삭제할 이미지 처리
+        existingPostImages.stream()
+                .filter(existingImage -> isImageToDelete(existingImage, parsedPostImages))
+                .forEach(this::deletePostImage);
+
+        // 새 이미지 저장
+        parsedPostImages.stream()
+                .filter(parsedImage -> isNewImage(parsedImage, existingPostImages))
+                .forEach(postImageRepository::save);
+    }
+
+    private boolean isImageToDelete(PostImage existingImage, List<PostImage> parsedImages) {
+        return parsedImages.stream()
+                .map(PostImage::getImageId)
+                .noneMatch(existingImage.getImageId()::equals);
+    }
+
+    private boolean isNewImage(PostImage parsedImage, List<PostImage> existingImages) {
+        return existingImages.stream()
+                .map(PostImage::getImageId)
+                .noneMatch(parsedImage.getImageId()::equals);
+    }
+
+    private void deletePostImage(PostImage image) {
+        postImageRepository.delete(image.getId());
+        imageService.deleteImage(image.getImageId());
     }
 }

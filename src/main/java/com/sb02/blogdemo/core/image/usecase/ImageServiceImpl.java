@@ -58,4 +58,13 @@ public class ImageServiceImpl implements ImageService {
 
         return true;
     }
+
+    @Override
+    public void deleteImage(UUID imageId) {
+        imageMetaRepository.findById(imageId)
+                .ifPresent(imageMeta -> {
+                    imageFileStorage.deleteImageFile(imageMeta.getPath());
+                    imageMetaRepository.deleteImageMeta(imageMeta.getId());
+                });
+    }
 }

@@ -26,4 +26,10 @@ public class ImageMetaRepository extends SimpleFileRepository<UUID, ImageMeta> i
     public Optional<ImageMeta> findById(UUID imageId) {
         return Optional.ofNullable(data.get(imageId));
     }
+
+    @Override
+    public void deleteImageMeta(UUID imageId) {
+        data.remove(imageId);
+        saveData();
+    }
 }

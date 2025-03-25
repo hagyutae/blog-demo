@@ -48,6 +48,22 @@ public class Post implements Serializable {
         return new Post(title, content, authorId, tags);
     }
 
+    public void update(String title, String content, List<String> tags) {
+        if (title != null) {
+            Validator.validateTitle(title);
+            this.title = title;
+        }
+        if (content != null) {
+            Validator.validateContent(content);
+            this.content = content;
+        }
+        if (tags != null) {
+            Validator.validateTags(tags);
+            this.tags = tags;
+        }
+        this.updatedAt = Instant.now();
+    }
+
     private static class Validator {
         public static void validate(String title, String content, List<String> tags) {
             validateTitle(title);

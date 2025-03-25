@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface ImageFileStoragePort {
     ImageFileInfo saveImageFile(UUID imageId, MultipartFile multipartFile);
     Optional<ImageFileInfo> findImageFile(String filePath);
+    void deleteImageFile(String filePath);
 }

@@ -1,8 +1,8 @@
 package com.sb02.blogdemo.adapter.outbound.image;
 
-import com.sb02.blogdemo.core.image.port.ImageFileInfo;
-import com.sb02.blogdemo.core.image.exception.ImageUploadDirectoryError;
 import com.sb02.blogdemo.core.image.exception.ImageFileError;
+import com.sb02.blogdemo.core.image.exception.ImageUploadDirectoryError;
+import com.sb02.blogdemo.core.image.port.ImageFileInfo;
 import com.sb02.blogdemo.core.image.port.ImageFileStoragePort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -65,5 +65,17 @@ public class LocalFileStorage implements ImageFileStoragePort {
             return Optional.empty();
         }
         return Optional.of(new ImageFileInfo(path.getFileName().toString(), filePath));
+    }
+
+    @Override
+    public void deleteImageFile(String filePath) {
+        Path path = storagePath.resolve(filePath);
+        if (Files.exists(path)) {
+            try {
+                Files.delete(path);
+            } catch (IOException e) {
+                throw new ImageFileError(e.getMessage());
+            }
+        }
     }
 }

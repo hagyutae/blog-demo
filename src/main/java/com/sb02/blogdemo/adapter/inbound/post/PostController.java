@@ -78,4 +78,26 @@ public class PostController {
         );
     }
 
+    @PutMapping("/{postId}")
+    @RequiresAuth
+    public ResponseEntity<UpdatePostResponse> updatePost(
+            @PathVariable UUID postId,
+            @RequestBody @Valid UpdatePostRequest updatePostRequest,
+            HttpServletRequest httpRequest
+    ) {
+        String userId = (String) httpRequest.getAttribute("userId");
+        UpdatePostCommand command = createUpdatePostCommand(postId, updatePostRequest);
+        postService.updatePost(command, userId);
+
+        return ResponseEntity.ok(new UpdatePostResponse(true));
+    }
+
+    private UpdatePostCommand createUpdatePostCommand(UUID postId, UpdatePostRequest updatePostRequest) {
+        return new UpdatePostCommand(
+                postId,
+                updatePostRequest.title(),
+                updatePostRequest.content(),
+                updatePostRequest.tags()
+        );
+    }
 }
