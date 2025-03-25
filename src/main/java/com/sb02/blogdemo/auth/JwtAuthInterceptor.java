@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
@@ -22,6 +23,23 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             @NonNull HttpServletResponse response,
             @NonNull Object handler
     ) throws Exception {
+        // 핸들러가 컨트롤러 메소드가 아닌 경우 (정적 리소스 등) 통과
+        if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
+
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+
+        // 메소드나 클래스에 @RequiresAuth 어노테이션이 있는지 확인
+        RequiresAuth methodAnnotation = handlerMethod.getMethodAnnotation(RequiresAuth.class);
+        RequiresAuth classAnnotation = handlerMethod.getBeanType().getAnnotation(RequiresAuth.class);
+
+        // 어노테이션이 없으면 인증 불필요 (통과)
+        if (methodAnnotation == null && classAnnotation == null) {
+            return true;
+        }
+
+        // 이 아래는 인증이 필요한 경우의 처리
         final String authorizationHeader = request.getHeader("Authorization");
 
         String userId;
@@ -60,4 +78,3 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
         return false;
     }
 }
-

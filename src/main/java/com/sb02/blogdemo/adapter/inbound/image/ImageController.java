@@ -1,5 +1,6 @@
 package com.sb02.blogdemo.adapter.inbound.image;
 
+import com.sb02.blogdemo.auth.RequiresAuth;
 import com.sb02.blogdemo.core.image.usecase.ImageService;
 import com.sb02.blogdemo.core.image.usecase.SaveImageCommand;
 import com.sb02.blogdemo.core.image.usecase.SaveImageResult;
@@ -19,6 +20,7 @@ public class ImageController {
     private final ImageService imageService;
 
     @PostMapping
+    @RequiresAuth
     public ResponseEntity<UploadImageResponse> uploadImage(@RequestParam("file") MultipartFile file) {
         SaveImageCommand command = new SaveImageCommand(file);
         SaveImageResult result = imageService.saveImage(command);

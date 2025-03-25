@@ -25,9 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(jwtAuthInterceptor)
-                .addPathPatterns("/api/posts/**", "/api/images/**") // 인증이 필요한 경로 패턴
-                .excludePathPatterns("/api/posts", "/api/posts/**") // GET 요청 제외 (필요에 따라 조정)
-                .excludePathPatterns("/api/users/register", "/api/users/login"); // 인증 제외 경로
+                .addPathPatterns("/api/**");
     }
 
     @Override
