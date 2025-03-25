@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
 
     @Override
-    public void register(RegisterUserCommand command) {
+    public void registerUser(RegisterUserCommand command) {
         if (existsById(command.id())) {
             String errMsg = "User with id " + command.id() + " already exists";
             logger.error(errMsg);

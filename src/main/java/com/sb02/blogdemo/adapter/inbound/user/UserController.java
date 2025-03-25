@@ -22,7 +22,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserRegistrationResponse> registerUser(@RequestBody @Valid UserRegistrationRequest requestBody) {
         RegisterUserCommand command = createRegisterUserCommand(requestBody);
-        userService.register(command);
+        userService.registerUser(command);
 
         return ResponseEntity.ok(new UserRegistrationResponse(true, "User registered successfully"));
     }
