@@ -1,6 +1,6 @@
 package com.sb02.blogdemo.adapter.outbound.image;
 
-import com.sb02.blogdemo.core.image.port.SaveFileResult;
+import com.sb02.blogdemo.core.image.port.ImageFileInfo;
 import com.sb02.blogdemo.core.image.exception.ImageUploadDirectoryError;
 import com.sb02.blogdemo.core.image.exception.ImageFileError;
 import com.sb02.blogdemo.core.image.port.ImageFileStoragePort;
@@ -14,19 +14,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class LocalFileStorage implements ImageFileStoragePort {
 
+    private final Path storagePath;
     private final Path uploadDirPath;
-    private final String uploadUrl;
 
     public LocalFileStorage(
-            @Value("${file.upload.dir}") String uploadDir,
-            @Value("${file.upload.url}") String uploadUrl
+            @Value("${storage.path}") String storageDir
     ) {
-        this.uploadDirPath = Paths.get(uploadDir);
+        this.storagePath = Paths.get(storageDir);
+        this.uploadDirPath = storagePath.resolve("upload");
         if (Files.notExists(uploadDirPath)) {
             try {
                 Files.createDirectories(uploadDirPath);
@@ -34,11 +35,10 @@ public class LocalFileStorage implements ImageFileStoragePort {
                 throw new ImageUploadDirectoryError(e.getMessage());
             }
         }
-        this.uploadUrl = uploadUrl;
     }
 
     @Override
-    public SaveFileResult saveImageFile(UUID imageId, MultipartFile multipartFile) {
+    public ImageFileInfo saveImageFile(UUID imageId, MultipartFile multipartFile) {
         if (multipartFile.isEmpty()) {
             throw new ImageFileError("Empty file");
         }
@@ -53,8 +53,17 @@ public class LocalFileStorage implements ImageFileStoragePort {
         }
     }
 
-    private SaveFileResult createFilePath(String storedFileName) {
-        String storedFilePath = uploadUrl + "/" + storedFileName;
-        return new SaveFileResult(storedFileName, storedFilePath);
+    private ImageFileInfo createFilePath(String storedFileName) {
+        String storedFilePath = "upload/" + storedFileName;
+        return new ImageFileInfo(storedFileName, storedFilePath);
+    }
+
+    @Override
+    public Optional<ImageFileInfo> findImageFile(String filePath) {
+        Path path = storagePath.resolve(filePath);
+        if (Files.notExists(path)) {
+            return Optional.empty();
+        }
+        return Optional.of(new ImageFileInfo(path.getFileName().toString(), filePath));
     }
 }

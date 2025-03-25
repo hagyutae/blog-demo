@@ -2,8 +2,5 @@ spring:
   application:
     name: blog-demo
 
-file:
-  entity: ${user.home}/.blog_demo/entities
-  upload:
-    dir: ${user.home}/.blog_demo/upload
-    url: http://localhost:8080/uploads
+storage:
+  path: ${user.home}/.blog_demo

@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public class UserRepository extends SimpleFileRepository<String, User> implements UserRepositoryPort {
 
-    public UserRepository(@Value("${file.entity}") String entityDir) {
-        super(entityDir, "user.ser");
+    public UserRepository(@Value("${storage.path}") String storageDir) {
+        super(storageDir, "user.ser");
     }
 
     @Override

@@ -19,8 +19,8 @@ public abstract class SimpleFileRepository<K, T> {
     protected final Path dataPath;
     protected final Map<K, T> data;
 
-    public SimpleFileRepository(String entityDir, String fileName) {
-        Path entityDirPath = Paths.get(entityDir);
+    public SimpleFileRepository(String storageDir, String fileName) {
+        Path entityDirPath = Paths.get(storageDir).resolve("entities");
         createDirectoryIfNotExists(entityDirPath);
         dataPath = entityDirPath.resolve(fileName);
         data = loadData();
