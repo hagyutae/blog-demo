@@ -4,4 +4,6 @@ spring:
 
 file:
   entity: ${user.home}/.blog_demo/entities
-  upload: ${user.home}/.blog_demo/upload
+  upload:
+    dir: ${user.home}/.blog_demo/upload
+    url: http://localhost:8080/uploads
