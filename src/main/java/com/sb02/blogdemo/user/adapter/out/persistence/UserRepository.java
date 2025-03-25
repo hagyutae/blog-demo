@@ -21,14 +21,14 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class FileUserRepository implements UserRepositoryPort {
+public class UserRepository implements UserRepositoryPort {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileUserRepository.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     private final Path dataPath;
     private final Map<String, User> data;
 
-    public FileUserRepository(@Value("${file.entity}") String entityDir) {
+    public UserRepository(@Value("${file.entity}") String entityDir) {
         Path entityDirPath = Paths.get(entityDir);
         createDirectoryIfNotExists(entityDirPath);
         dataPath = entityDirPath.resolve("user.ser");
