@@ -27,8 +27,6 @@ public class ImageMeta implements Serializable {
             Long size,
             Instant uploadedAt
     ) {
-        validateExtension(fileName);
-
         this.id = UUID.randomUUID();
         this.originalName = truncateName(extractOriginalName(fileName));
         this.extension = extractExtension(fileName);
@@ -38,6 +36,7 @@ public class ImageMeta implements Serializable {
     }
 
     public static ImageMeta create(String fileName, String path, Long size) {
+        Validator.validate(fileName);
         return new ImageMeta(fileName, path, size, Instant.now());
     }
 
@@ -63,17 +62,34 @@ public class ImageMeta implements Serializable {
         }
     }
 
-    public static void validateExtension(String fileName) {
-        // 이미지 파일 확장자 검증(jpg, jpeg, png, gif만 허용)
-        String[] allowedExtensions = {".jpg", ".jpeg", ".png", ".gif"};
+    private static class Validator {
 
-        String extension = extractExtension(fileName);
+        public static void validate(String fileName) {
+            validateFileName(fileName);
+            validateExtension(fileName);
+        }
 
-        for (String allowedExtension : allowedExtensions) {
-            if (extension.equals(allowedExtension)) {
-                return;
+        public static void validateFileName(String fileName) {
+            String fileNameWithoutExtension = extractOriginalName(fileName);
+            if (fileNameWithoutExtension.isBlank()) {
+                throw new ImageMetaException("file name must not be empty");
             }
         }
-        throw new ImageMetaException("extension not allowed: " + extension);
+
+        public static void validateExtension(String fileName) {
+            // 이미지 파일 확장자 검증(jpg, jpeg, png, gif만 허용)
+            String[] allowedExtensions = {".jpg", ".jpeg", ".png", ".gif"};
+
+            String extension = extractExtension(fileName);
+
+            for (String allowedExtension : allowedExtensions) {
+                if (extension.equals(allowedExtension)) {
+                    return;
+                }
+            }
+            throw new ImageMetaException("extension not allowed: " + extension);
+        }
     }
+
+
 }
