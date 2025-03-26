@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageFileError;
 import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageUploadDirectoryError;
@@ -88,10 +89,9 @@ public class LocalImageFileStorage implements ImageFileStoragePort {
     public Set<String> findAllImageFiles() {
         Set<String> imagePaths = new HashSet<>();
 
-        try {
-            // Files.walk을 사용하여 uploadDirPath 경로 아래의 모든 파일을 재귀적으로 탐색
-            // 두 번째 매개변수는 최대 탐색 깊이를 지정하며, Integer.MAX_VALUE는 모든 하위 디렉토리를 탐색함을 의미.
-            Files.walk(uploadDirPath, Integer.MAX_VALUE)
+        // Use the stream within a try-with-resources block to ensure proper closing
+        try (Stream<Path> pathStream = Files.walk(uploadDirPath, Integer.MAX_VALUE)) {
+            pathStream
                     .filter(Files::isRegularFile)
                     .filter(this::isImageFile)
                     .map(Path::toString)

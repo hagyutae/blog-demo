@@ -80,12 +80,9 @@ public class ImageMeta implements Serializable {
         public static void validateExtension(String fileName) {
             String extension = extractExtension(fileName);
 
-            for (String allowedExtension : ImageExtension.getAllExtensions()) {
-                if (extension.equals(allowedExtension)) {
-                    return;
-                }
+            if (!ImageExtension.isAllowedExtension(extension)) {
+                throw invalidImageMetaAttributeError("extension", "not allowed: " + extension);
             }
-            throw invalidImageMetaAttributeError("extension", "not allowed: " + extension);
         }
     }
 

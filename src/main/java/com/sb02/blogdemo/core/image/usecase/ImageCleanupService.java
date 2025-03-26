@@ -143,18 +143,6 @@ public class ImageCleanupService {
                 .collect(Collectors.toSet());
     }
 
-    private Set<UUID> filterImagesByAge(Set<UUID> imageIds) {
-        Instant threshold = Instant.now().minus(UNUSED_IMAGE_THRESHOLD_HOURS, ChronoUnit.HOURS);
-
-        return imageIds.stream()
-                .filter(imageId -> {
-                    Optional<ImageMeta> imageMeta = imageMetaRepository.findById(imageId);
-                    return imageMeta.map(meta -> meta.getUploadedAt().isBefore(threshold))
-                            .orElse(false);
-                })
-                .collect(Collectors.toSet());
-    }
-
     private int deleteOrphanedFiles(Set<String> orphanedFiles) {
         int deletedCount = 0;
 
