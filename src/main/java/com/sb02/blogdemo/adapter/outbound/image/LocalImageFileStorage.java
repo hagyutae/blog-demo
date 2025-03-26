@@ -1,7 +1,10 @@
 package com.sb02.blogdemo.adapter.outbound.image;
 
+import com.sb02.blogdemo.core.image.entity.ImageExtension;
 import com.sb02.blogdemo.core.image.port.ImageFileInfo;
 import com.sb02.blogdemo.core.image.port.ImageFileStoragePort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,19 +15,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageFileError;
 import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageUploadDirectoryError;
 
 @Component
-public class LocalFileStorage implements ImageFileStoragePort {
+public class LocalImageFileStorage implements ImageFileStoragePort {
+
+    private static final Logger logger = LoggerFactory.getLogger(LocalImageFileStorage.class);
 
     private final Path storagePath;
     private final Path uploadDirPath;
 
-    public LocalFileStorage(
+    public LocalImageFileStorage(
             @Value("${storage.path}") String storageDir
     ) {
         this.storagePath = Paths.get(storageDir);
@@ -78,5 +82,41 @@ public class LocalFileStorage implements ImageFileStoragePort {
                 throw invalidImageFileError(e.getMessage());
             }
         }
+    }
+
+    @Override
+    public Set<String> findAllImageFiles() {
+        Set<String> imagePaths = new HashSet<>();
+
+        try {
+            // Files.walk을 사용하여 uploadDirPath 경로 아래의 모든 파일을 재귀적으로 탐색
+            // 두 번째 매개변수는 최대 탐색 깊이를 지정하며, Integer.MAX_VALUE는 모든 하위 디렉토리를 탐색함을 의미.
+            Files.walk(uploadDirPath, Integer.MAX_VALUE)
+                    .filter(Files::isRegularFile)
+                    .filter(this::isImageFile)
+                    .map(Path::toString)
+                    .forEach(imagePaths::add);
+
+            logger.info("Found {} image files in upload directory", imagePaths.size());
+        } catch (IOException e) {
+            logger.error("Error accessing files in upload directory: {}", e.getMessage());
+        }
+
+        return imagePaths;
+    }
+
+    private boolean isImageFile(Path path) {
+        String fileName = path.getFileName().toString().toLowerCase();
+        for (String extension : ImageExtension.getAllExtensions()) {
+            if (fileName.endsWith(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String createFullFilePath(String filePath) {
+        return storagePath.resolve(filePath).toString();
     }
 }
