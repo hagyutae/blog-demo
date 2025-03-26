@@ -76,20 +76,32 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void updatePost(UpdatePostCommand command) {
-        Post post = postRepository.findById(command.postId()).orElseThrow(() -> new PostNotFound("Post with id " + command.postId() + " not found"));
+        Post post = findPostAndVerifyAccess(command.postId(), command.requestUserId());
+        updatePostContent(post, command);
+        updatePostImages(post);
+    }
 
-        String requestUserId = command.requestUserId();
+    private Post findPostAndVerifyAccess(UUID postId, String requestUserId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFound("Post with id " + postId + " not found"));
+        verifyPostAccess(post, requestUserId);
+        return post;
+    }
 
+    private void verifyPostAccess(Post post, String requestUserId) {
         if (!post.getAuthorId().equals(requestUserId)) {
-            throw new InvalidPostAccess("User with id " + requestUserId + " does not have access to modifying post with id " + command.postId());
+            throw new InvalidPostAccess("User not authorized to modify this post");
         }
+    }
 
+    private void updatePostContent(Post post, UpdatePostCommand command) {
         post.update(command.title(), command.content(), command.tags());
         postRepository.save(post);
+    }
 
+    private void updatePostImages(Post post) {
         List<PostImage> parsedPostImages = postImageParseService.parseImages(post.getId(), post.getContent());
         List<PostImage> existingPostImages = postImageRepository.retrieveImages(post.getId());
-
         processPostImages(parsedPostImages, existingPostImages);
     }
 
