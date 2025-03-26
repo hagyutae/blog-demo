@@ -5,7 +5,10 @@ import com.sb02.blogdemo.adapter.inbound.user.dto.UserRegistrationRequest;
 import com.sb02.blogdemo.core.user.usecase.dto.LoginUserCommand;
 import com.sb02.blogdemo.core.user.usecase.dto.RegisterUserCommand;
 
-public class UserDtoMapper {
+public final class UserDtoMapper {
+
+    private UserDtoMapper() {}
+
     static RegisterUserCommand toRegisterUserCommand(UserRegistrationRequest requestBody) {
         return new RegisterUserCommand(
                 requestBody.id(),

@@ -10,7 +10,10 @@ import com.sb02.blogdemo.utils.TimeUtils;
 
 import java.util.UUID;
 
-public class PostDtoMapper {
+public final class PostDtoMapper {
+
+    private PostDtoMapper() {}
+
     static PublishPostCommand toPublishPostCommand(PublishPostRequest publishPostRequest, String userId) {
         return new PublishPostCommand(
                 publishPostRequest.title(),
