@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.sb02.blogdemo.adapter.inbound.user.UserDtoMapper.toLoginUserCommand;
+import static com.sb02.blogdemo.adapter.inbound.user.UserDtoMapper.toRegisterUserCommand;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -25,33 +28,18 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserRegistrationResponse> registerUser(@RequestBody @Valid UserRegistrationRequest requestBody) {
-        RegisterUserCommand command = createRegisterUserCommand(requestBody);
+        RegisterUserCommand command = toRegisterUserCommand(requestBody);
         userService.registerUser(command);
 
         return ResponseEntity.ok(new UserRegistrationResponse(true, "User registered successfully"));
     }
 
-    private RegisterUserCommand createRegisterUserCommand(UserRegistrationRequest requestBody) {
-        return new RegisterUserCommand(
-                requestBody.id(),
-                requestBody.password(),
-                requestBody.email(),
-                requestBody.nickname()
-        );
-    }
-
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> loginUser(@RequestBody @Valid UserLoginRequest requestBody) {
-        LoginUserCommand command = createLoginUserCommand(requestBody);
+        LoginUserCommand command = toLoginUserCommand(requestBody);
         LoginUserResult result = userService.login(command);
 
         return ResponseEntity.ok(new UserLoginResponse(true, result.token()));
     }
 
-    private LoginUserCommand createLoginUserCommand(UserLoginRequest requestBody) {
-        return new LoginUserCommand(
-                requestBody.id(),
-                requestBody.password()
-        );
-    }
 }

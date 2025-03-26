@@ -9,7 +9,6 @@ import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostsResult;
 import com.sb02.blogdemo.core.posting.usecase.search.PostSearchService;
 import com.sb02.blogdemo.core.posting.usecase.search.dto.SearchPostByKeywordCommand;
 import com.sb02.blogdemo.core.posting.usecase.search.dto.SearchPostByTagCommand;
-import com.sb02.blogdemo.utils.TimeUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+
+import static com.sb02.blogdemo.adapter.inbound.post.PostDtoMapper.*;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -34,38 +35,17 @@ public class PostController {
             HttpServletRequest httpRequest
     ) {
         var userId = (String) httpRequest.getAttribute("userId");
-        PublishPostCommand command = createPublishPostCommand(publishPostRequest, userId);
+        PublishPostCommand command = toPublishPostCommand(publishPostRequest, userId);
         PublishPostResult result = postService.publishPost(command);
 
-        return ResponseEntity.ok(new PublishPostResponse(true, result.postId().toString()));
-    }
-
-    private PublishPostCommand createPublishPostCommand(PublishPostRequest publishPostRequest, String userId) {
-        return new PublishPostCommand(
-                publishPostRequest.title(),
-                publishPostRequest.content(),
-                userId,
-                publishPostRequest.tags()
-        );
+        return ResponseEntity.ok(toPublishPostResponse(result));
     }
 
     @GetMapping("/{postId}")
     public ResponseEntity<RetrievedPost> retrieveById(@PathVariable UUID postId) {
         RetrievePostResult result = postService.retrievePostById(postId);
-        return ResponseEntity.ok(convertToRetrievedPost(result));
-    }
 
-    private RetrievedPost convertToRetrievedPost(RetrievePostResult result) {
-        return new RetrievedPost(
-                result.postId().toString(),
-                result.title(),
-                result.content(),
-                result.authorId(),
-                result.authorNickname(),
-                TimeUtils.formatedTimeString(result.createdAt()),
-                TimeUtils.formatedTimeString(result.updatedAt()),
-                result.tags()
-        );
+        return ResponseEntity.ok(toRetrievedPost(result));
     }
 
     @GetMapping
@@ -76,15 +56,7 @@ public class PostController {
         RetrievePaginatedPostsCommand command = new RetrievePaginatedPostsCommand(page, size);
         RetrievePostsResult result = postService.retrievePaginatedPosts(command);
 
-        return ResponseEntity.ok(convertToRetrievePostsResponse(result));
-    }
-
-    private RetrievePostsResponse convertToRetrievePostsResponse(RetrievePostsResult result) {
-        return new RetrievePostsResponse(
-                result.posts().stream().map(this::convertToRetrievedPost).toList(),
-                result.totalPages(),
-                result.currentPage()
-        );
+        return ResponseEntity.ok(toRetrievePostsResponse(result));
     }
 
     @PutMapping("/{postId}")
@@ -95,20 +67,10 @@ public class PostController {
             HttpServletRequest httpRequest
     ) {
         String userId = (String) httpRequest.getAttribute("userId");
-        UpdatePostCommand command = createUpdatePostCommand(postId, userId, updatePostRequest);
+        UpdatePostCommand command = toUpdatePostCommand(postId, userId, updatePostRequest);
         postService.updatePost(command);
 
         return ResponseEntity.ok(new UpdatePostResponse(true));
-    }
-
-    private UpdatePostCommand createUpdatePostCommand(UUID postId, String userId, UpdatePostRequest updatePostRequest) {
-        return new UpdatePostCommand(
-                userId,
-                postId,
-                updatePostRequest.title(),
-                updatePostRequest.content(),
-                updatePostRequest.tags()
-        );
     }
 
     @DeleteMapping("/{postId}")
@@ -133,7 +95,7 @@ public class PostController {
         SearchPostByKeywordCommand command = new SearchPostByKeywordCommand(keyword, page, size);
         RetrievePostsResult result = postSearchService.searchByKeyword(command);
 
-        return ResponseEntity.ok(convertToRetrievePostsResponse(result));
+        return ResponseEntity.ok(toRetrievePostsResponse(result));
     }
 
     @GetMapping("/tags/{tag}")
@@ -145,6 +107,6 @@ public class PostController {
         SearchPostByTagCommand command = new SearchPostByTagCommand(tag, page, size);
         RetrievePostsResult result = postSearchService.searchByTag(command);
 
-        return ResponseEntity.ok(convertToRetrievePostsResponse(result));
+        return ResponseEntity.ok(toRetrievePostsResponse(result));
     }
 }
