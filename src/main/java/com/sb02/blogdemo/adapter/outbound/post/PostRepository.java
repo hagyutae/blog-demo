@@ -30,6 +30,11 @@ public class PostRepository extends SimpleFileRepository<UUID, Post> implements 
     }
 
     @Override
+    public List<Post> findAll() {
+        return data.values().stream().toList();
+    }
+
+    @Override
     public List<Post> findAll(long page, long size, boolean newestFirst) {
         return data.values().stream()
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())

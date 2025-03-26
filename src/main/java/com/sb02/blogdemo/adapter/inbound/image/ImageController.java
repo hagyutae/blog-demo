@@ -2,8 +2,8 @@ package com.sb02.blogdemo.adapter.inbound.image;
 
 import com.sb02.blogdemo.auth.RequiresAuth;
 import com.sb02.blogdemo.core.image.usecase.ImageService;
-import com.sb02.blogdemo.core.image.usecase.SaveImageCommand;
-import com.sb02.blogdemo.core.image.usecase.SaveImageResult;
+import com.sb02.blogdemo.core.image.usecase.dto.SaveImageCommand;
+import com.sb02.blogdemo.core.image.usecase.dto.SaveImageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

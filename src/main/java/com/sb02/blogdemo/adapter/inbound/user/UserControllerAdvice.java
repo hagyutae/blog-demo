@@ -1,6 +1,6 @@
 package com.sb02.blogdemo.adapter.inbound.user;
 
-import com.sb02.blogdemo.ErrorResponse;
+import com.sb02.blogdemo.adapter.inbound.dto.ErrorResponse;
 import com.sb02.blogdemo.core.user.exception.UserAlreadyExists;
 import com.sb02.blogdemo.core.user.exception.UserException;
 import com.sb02.blogdemo.core.user.exception.UserLoginFailed;

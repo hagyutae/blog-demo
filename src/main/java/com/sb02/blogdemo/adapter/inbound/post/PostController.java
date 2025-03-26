@@ -1,10 +1,18 @@
 package com.sb02.blogdemo.adapter.inbound.post;
 
+import com.sb02.blogdemo.adapter.inbound.post.dto.*;
 import com.sb02.blogdemo.auth.RequiresAuth;
-import com.sb02.blogdemo.core.posting.usecase.*;
+import com.sb02.blogdemo.core.posting.usecase.crud.PostService;
+import com.sb02.blogdemo.core.posting.usecase.crud.dto.*;
+import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostResult;
+import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostsResult;
+import com.sb02.blogdemo.core.posting.usecase.search.PostSearchService;
+import com.sb02.blogdemo.core.posting.usecase.search.dto.SearchPostByKeywordCommand;
+import com.sb02.blogdemo.core.posting.usecase.search.dto.SearchPostByTagCommand;
 import com.sb02.blogdemo.utils.TimeUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +25,7 @@ import java.util.UUID;
 public class PostController {
 
     private final PostService postService;
+    private final PostSearchService postSearchService;
 
     @PostMapping
     @RequiresAuth
@@ -24,7 +33,7 @@ public class PostController {
             @RequestBody @Valid PublishPostRequest publishPostRequest,
             HttpServletRequest httpRequest
     ) {
-        String userId = (String) httpRequest.getAttribute("userId");
+        var userId = (String) httpRequest.getAttribute("userId");
         PublishPostCommand command = createPublishPostCommand(publishPostRequest, userId);
         PublishPostResult result = postService.publishPost(command);
 
@@ -108,10 +117,34 @@ public class PostController {
             @PathVariable UUID postId,
             HttpServletRequest httpRequest
     ) {
-        String userId = (String) httpRequest.getAttribute("userId");
+        var userId = (String) httpRequest.getAttribute("userId");
         DeletePostCommand command = new DeletePostCommand(userId, postId);
         postService.deletePost(command);
 
         return ResponseEntity.ok(new DeletePostResponse(true));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<RetrievePostsResponse> keywordSearch(
+            @RequestParam @NotBlank String keyword,
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size
+    ) {
+        SearchPostByKeywordCommand command = new SearchPostByKeywordCommand(keyword, page, size);
+        RetrievePostsResult result = postSearchService.searchByKeyword(command);
+
+        return ResponseEntity.ok(convertToRetrievePostsResponse(result));
+    }
+
+    @GetMapping("/tags/{tag}")
+    public ResponseEntity<RetrievePostsResponse> tagSearch(
+            @PathVariable @NotBlank String tag,
+            @RequestParam(defaultValue = "0") long page,
+            @RequestParam(defaultValue = "10") long size
+    ) {
+        SearchPostByTagCommand command = new SearchPostByTagCommand(tag, page, size);
+        RetrievePostsResult result = postSearchService.searchByTag(command);
+
+        return ResponseEntity.ok(convertToRetrievePostsResponse(result));
     }
 }

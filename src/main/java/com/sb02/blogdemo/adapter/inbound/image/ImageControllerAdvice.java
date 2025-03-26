@@ -1,6 +1,6 @@
 package com.sb02.blogdemo.adapter.inbound.image;
 
-import com.sb02.blogdemo.ErrorResponse;
+import com.sb02.blogdemo.adapter.inbound.dto.ErrorResponse;
 import com.sb02.blogdemo.core.image.exception.ImageException;
 import com.sb02.blogdemo.core.image.exception.ImageMetaException;
 import org.slf4j.Logger;

@@ -1,6 +1,6 @@
 package com.sb02.blogdemo.adapter.inbound.post;
 
-import com.sb02.blogdemo.ErrorResponse;
+import com.sb02.blogdemo.adapter.inbound.dto.ErrorResponse;
 import com.sb02.blogdemo.core.posting.exception.InvalidPostAccess;
 import com.sb02.blogdemo.core.posting.exception.PostException;
 import com.sb02.blogdemo.core.posting.exception.PostImageLostError;

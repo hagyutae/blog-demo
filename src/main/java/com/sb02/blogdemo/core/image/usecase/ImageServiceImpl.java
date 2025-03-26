@@ -5,6 +5,8 @@ import com.sb02.blogdemo.core.image.exception.ImageFileError;
 import com.sb02.blogdemo.core.image.port.ImageFileStoragePort;
 import com.sb02.blogdemo.core.image.port.ImageMetaRepositoryPort;
 import com.sb02.blogdemo.core.image.port.ImageFileInfo;
+import com.sb02.blogdemo.core.image.usecase.dto.SaveImageCommand;
+import com.sb02.blogdemo.core.image.usecase.dto.SaveImageResult;
 import com.sb02.blogdemo.core.posting.exception.PostImageLostError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

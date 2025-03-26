@@ -1,8 +1,12 @@
 package com.sb02.blogdemo.adapter.inbound.user;
 
-import com.sb02.blogdemo.core.user.usecase.LoginUserCommand;
-import com.sb02.blogdemo.core.user.usecase.LoginUserResult;
-import com.sb02.blogdemo.core.user.usecase.RegisterUserCommand;
+import com.sb02.blogdemo.adapter.inbound.user.dto.UserLoginRequest;
+import com.sb02.blogdemo.adapter.inbound.user.dto.UserLoginResponse;
+import com.sb02.blogdemo.adapter.inbound.user.dto.UserRegistrationRequest;
+import com.sb02.blogdemo.adapter.inbound.user.dto.UserRegistrationResponse;
+import com.sb02.blogdemo.core.user.usecase.dto.LoginUserCommand;
+import com.sb02.blogdemo.core.user.usecase.dto.LoginUserResult;
+import com.sb02.blogdemo.core.user.usecase.dto.RegisterUserCommand;
 import com.sb02.blogdemo.core.user.usecase.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
