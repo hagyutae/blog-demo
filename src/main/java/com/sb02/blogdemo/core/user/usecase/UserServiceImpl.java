@@ -21,48 +21,53 @@ import static com.sb02.blogdemo.core.user.exception.UserErrors.userLoginFailedEr
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    public static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepositoryPort userRepository;
     private final JwtUtil jwtUtil;
 
     @Override
     public void registerUser(RegisterUserCommand command) {
-        if (existsById(command.id())) {
-            throw userAlreadyExistsError(command.id());
-        }
+        String userId = command.id();
 
-        User user = User.create(command.id(), command.password(), command.email(), command.nickname());
-        userRepository.save(user);
+        Optional.of(userId)
+                .filter(id -> !existsById(id))
+                .map(id -> createUser(command))
+                .ifPresentOrElse(
+                        user -> {
+                            userRepository.save(user);
+                            logger.info("User registered: {}", user.getId());
+                        },
+                        () -> {
+                            throw userAlreadyExistsError(userId);
+                        }
+                );
+    }
 
-        logger.info("User registered: {}", user.getId());
+    private User createUser(RegisterUserCommand command) {
+        return User.create(command.id(), command.password(), command.email(), command.nickname());
     }
 
     @Override
     public LoginUserResult login(LoginUserCommand command) {
-        Optional<User> found = userRepository.findById(command.id());
-        if (found.isEmpty()) {
-            throw userLoginFailedError(command.id(), "not found");
-        }
+        return userRepository.findById(command.id())
+                .map(user -> validatePassword(user, command.password()))
+                .map(user -> {
+                    String token = jwtUtil.generateToken(user.getId());
+                    logger.info("User logged in: {}", user.getId());
+                    return new LoginUserResult(token);
+                })
+                .orElseThrow(() -> userLoginFailedError(command.id(), "not found"));
+    }
 
-        User user = found.get();
-
-        boolean matched = PasswordUtil.checkPassword(command.password(), user.getPassword());
-
-        if (!matched) {
-            throw userLoginFailedError(command.id(), "password mismatch");
-        }
-
-        String token = jwtUtil.generateToken(user.getId());
-
-        logger.info("User logged in: {}", user.getId());
-
-        return new LoginUserResult(token);
+    private User validatePassword(User user, String password) {
+        return Optional.of(user)
+                .filter(u -> PasswordUtil.checkPassword(password, u.getPassword()))
+                .orElseThrow(() -> userLoginFailedError(user.getId(), "password mismatch"));
     }
 
     @Override
     public boolean existsById(String userId) {
-        Optional<User> found = userRepository.findById(userId);
-        return found.isPresent();
+        return userRepository.findById(userId).isPresent();
     }
 }

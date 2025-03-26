@@ -1,6 +1,5 @@
 package com.sb02.blogdemo.core.posting.usecase.crud;
 
-
 import com.sb02.blogdemo.core.image.usecase.DeleteImageUseCase;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
@@ -15,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import static com.sb02.blogdemo.core.posting.exception.PostErrors.invalidPostAccessError;
 import static com.sb02.blogdemo.core.posting.exception.PostErrors.postNotFoundError;
@@ -32,37 +33,52 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PublishPostResult publishPost(PublishPostCommand command) {
-        Post post = Post.create(command.title(), command.content(), command.authorId(), command.tags());
-        List<PostImage> postImages = postImageParseService.parseImages(post.getId(), post.getContent());
-        postRepository.save(post);
-        postImageRepository.saveAll(postImages);
-        return new PublishPostResult(post.getId());
+        return Optional.of(command)
+                .map(cmd -> Post.create(cmd.title(), cmd.content(), cmd.authorId(), cmd.tags()))
+                .map(post -> {
+                    List<PostImage> postImages = postImageParseService.parseImages(post.getId(), post.getContent());
+                    postRepository.save(post);
+                    postImageRepository.saveAll(postImages);
+                    return new PublishPostResult(post.getId());
+                })
+                .get();
     }
 
     @Override
     public RetrievePostResult retrievePostById(UUID postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> postNotFoundError(postId));
-        String authorNickname = userRepository.findById(post.getAuthorId()).map(User::getNickname).orElse("");
-
-        return convertToRetrievePostResult(post, authorNickname);
+        return postRepository.findById(postId)
+                .map(post -> {
+                    String nickname = findAuthorNickname(post.getAuthorId());
+                    return toRetrievePostResult(post, nickname);
+                })
+                .orElseThrow(() -> postNotFoundError(postId));
     }
 
     @Override
     public RetrievePostsResult retrievePaginatedPosts(RetrievePaginatedPostsCommand command) {
         List<Post> posts = postRepository.findAll(command.page(), command.size(), true);
-        List<RetrievePostResult> results = posts.stream()
-                .map(post -> {
-                    String authorNickname = userRepository.findById(post.getAuthorId()).map(User::getNickname).orElse("");
-                    return convertToRetrievePostResult(post, authorNickname);
-                })
-                .toList();
 
-        int totalPages = (int) Math.ceil((double) postRepository.countAll() / (double) command.size());
-
-        return new RetrievePostsResult(results, command.page(), command.size(), totalPages);
+        return new RetrievePostsResult(
+                posts.stream()
+                        .map(post -> toRetrievePostResult(post, findAuthorNickname(post.getAuthorId())))
+                        .toList(),
+                command.page(),
+                command.size(),
+                calculateTotalPages(postRepository.countAll(), command.size())
+        );
     }
 
-    private RetrievePostResult convertToRetrievePostResult(Post post, String authorNickname) {
+    private int calculateTotalPages(int totalItems, long pageSize) {
+        return (int) Math.ceil((double) totalItems / pageSize);
+    }
+
+    private String findAuthorNickname(String authorId) {
+        return userRepository.findById(authorId)
+                .map(User::getNickname)
+                .orElse("");
+    }
+
+    private RetrievePostResult toRetrievePostResult(Post post, String authorNickname) {
         return new RetrievePostResult(
                 post.getId(),
                 post.getTitle(),
@@ -77,56 +93,52 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void updatePost(UpdatePostCommand command) {
-        Post post = findPostAndVerifyAccess(command.postId(), command.requestUserId());
-        updatePostContent(post, command);
-        updatePostImages(post);
+        postRepository.findById(command.postId())
+                .map(post -> validateAndUpdatePost(post, command))
+                .map(this::updatePostImages)
+                .orElseThrow(() -> postNotFoundError(command.postId()));
     }
 
-    private Post findPostAndVerifyAccess(UUID postId, String requestUserId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> postNotFoundError(postId));
-        verifyPostAccess(post, requestUserId);
+    private Post validateAndUpdatePost(Post post, UpdatePostCommand command) {
+        if (!post.getAuthorId().equals(command.requestUserId())) {
+            throw invalidPostAccessError(command.requestUserId());
+        }
+
+        post.update(command.title(), command.content(), command.tags());
+        postRepository.save(post);
         return post;
     }
 
-    private void verifyPostAccess(Post post, String requestUserId) {
-        if (!post.getAuthorId().equals(requestUserId)) {
-            throw invalidPostAccessError(requestUserId);
-        }
+    private Post updatePostImages(Post post) {
+        List<PostImage> parsedImages = postImageParseService.parseImages(post.getId(), post.getContent());
+        List<PostImage> existingImages = postImageRepository.retrieveImages(post.getId());
+
+        processImageDifferences(parsedImages, existingImages);
+        return post;
     }
 
-    private void updatePostContent(Post post, UpdatePostCommand command) {
-        post.update(command.title(), command.content(), command.tags());
-        postRepository.save(post);
-    }
-
-    private void updatePostImages(Post post) {
-        List<PostImage> parsedPostImages = postImageParseService.parseImages(post.getId(), post.getContent());
-        List<PostImage> existingPostImages = postImageRepository.retrieveImages(post.getId());
-        processPostImages(parsedPostImages, existingPostImages);
-    }
-
-    private void processPostImages(List<PostImage> parsedPostImages, List<PostImage> existingPostImages) {
-        // 삭제할 이미지 처리
-        existingPostImages.stream()
-                .filter(existingImage -> isImageToDelete(existingImage, parsedPostImages))
+    private void processImageDifferences(List<PostImage> newImages, List<PostImage> existingImages) {
+        // Process images to delete (in existing but not in new)
+        existingImages.stream()
+                .filter(createImageToDeletePredicate(newImages))
                 .forEach(this::deletePostImage);
 
-        // 새 이미지 저장
-        parsedPostImages.stream()
-                .filter(parsedImage -> isNewImage(parsedImage, existingPostImages))
+        // Process images to add (in new but not in existing)
+        newImages.stream()
+                .filter(createNewImagePredicate(existingImages))
                 .forEach(postImageRepository::save);
     }
 
-    private boolean isImageToDelete(PostImage existingImage, List<PostImage> parsedImages) {
-        return parsedImages.stream()
+    private Predicate<PostImage> createImageToDeletePredicate(List<PostImage> newImages) {
+        return existingImage -> newImages.stream()
                 .map(PostImage::getImageId)
                 .noneMatch(existingImage.getImageId()::equals);
     }
 
-    private boolean isNewImage(PostImage parsedImage, List<PostImage> existingImages) {
-        return existingImages.stream()
+    private Predicate<PostImage> createNewImagePredicate(List<PostImage> existingImages) {
+        return newImage -> existingImages.stream()
                 .map(PostImage::getImageId)
-                .noneMatch(parsedImage.getImageId()::equals);
+                .noneMatch(newImage.getImageId()::equals);
     }
 
     private void deletePostImage(PostImage postImage) {
@@ -136,8 +148,16 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(DeletePostCommand command) {
-        Post post = postRepository.findById(command.postId()).orElseThrow(() -> postNotFoundError(command.postId()));
-        postImageRepository.retrieveImages(post.getId()).forEach(this::deletePostImage);
-        postRepository.delete(post.getId());
+        postRepository.findById(command.postId())
+                .ifPresentOrElse(
+                        post -> {
+                            // Delete all associated images first
+                            postImageRepository.retrieveImages(post.getId())
+                                    .forEach(this::deletePostImage);
+                            // Then delete the post
+                            postRepository.delete(post.getId());
+                        },
+                        () -> { throw postNotFoundError(command.postId()); }
+                );
     }
 }
