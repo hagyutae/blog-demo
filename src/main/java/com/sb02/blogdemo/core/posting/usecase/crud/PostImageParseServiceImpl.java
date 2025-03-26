@@ -16,14 +16,15 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class PostImageParseServiceImpl implements PostImageParseService {
 
+    private static final Pattern IMAGE_REFERENCE_PATTERN =  Pattern.compile("\\{\\{([^|]+)\\|([^}]+)\\}\\}");
+
     private final FindImageUseCase findImageUseCase;
 
     @Override
     public List<PostImage> parseImages(UUID postId, String content) {
         List<UUID> imageIds = new ArrayList<UUID>();
 
-        Pattern pattern = Pattern.compile("\\{\\{([^|]+)\\|([^}]+)\\}\\}");
-        Matcher matcher = pattern.matcher(content);
+        Matcher matcher = IMAGE_REFERENCE_PATTERN.matcher(content);
 
         while (matcher.find()) {
             String imageIdStr = matcher.group(1).trim();
