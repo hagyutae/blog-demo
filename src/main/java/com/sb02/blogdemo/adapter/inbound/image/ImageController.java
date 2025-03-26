@@ -1,7 +1,7 @@
 package com.sb02.blogdemo.adapter.inbound.image;
 
 import com.sb02.blogdemo.auth.RequiresAuth;
-import com.sb02.blogdemo.core.image.usecase.ImageService;
+import com.sb02.blogdemo.core.image.usecase.SaveImageUseCase;
 import com.sb02.blogdemo.core.image.usecase.dto.SaveImageCommand;
 import com.sb02.blogdemo.core.image.usecase.dto.SaveImageResult;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +17,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageController {
 
-    private final ImageService imageService;
+    private final SaveImageUseCase saveImageUseCase;
 
     @PostMapping
     @RequiresAuth
     public ResponseEntity<UploadImageResponse> uploadImage(@RequestParam("file") MultipartFile file) {
         SaveImageCommand command = new SaveImageCommand(file);
-        SaveImageResult result = imageService.saveImage(command);
+        SaveImageResult result = saveImageUseCase.saveImage(command);
 
         return ResponseEntity.ok(new UploadImageResponse(true, result.imageId().toString(), result.uploadPath()));
     }

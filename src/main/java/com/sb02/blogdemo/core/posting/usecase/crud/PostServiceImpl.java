@@ -1,7 +1,7 @@
 package com.sb02.blogdemo.core.posting.usecase.crud;
 
 
-import com.sb02.blogdemo.core.image.usecase.ImageService;
+import com.sb02.blogdemo.core.image.usecase.DeleteImageUseCase;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
 import com.sb02.blogdemo.core.posting.exception.InvalidPostAccess;
@@ -27,7 +27,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepositoryPort postRepository;
     private final PostImageRepositoryPort postImageRepository;
     private final UserRepositoryPort userRepository;
-    private final ImageService imageService;
+    private final DeleteImageUseCase deleteImageUseCase;
 
     @Override
     public PublishPostResult publishPost(PublishPostCommand command) {
@@ -119,7 +119,7 @@ public class PostServiceImpl implements PostService {
 
     private void deletePostImage(PostImage postImage) {
         postImageRepository.delete(postImage.getId());
-        imageService.deleteImage(postImage.getImageId());
+        deleteImageUseCase.deleteImage(postImage.getImageId());
     }
 
     @Override
