@@ -4,8 +4,6 @@ package com.sb02.blogdemo.core.posting.usecase.crud;
 import com.sb02.blogdemo.core.image.usecase.DeleteImageUseCase;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
-import com.sb02.blogdemo.core.posting.exception.InvalidPostAccess;
-import com.sb02.blogdemo.core.posting.exception.PostNotFound;
 import com.sb02.blogdemo.core.posting.port.PostImageRepositoryPort;
 import com.sb02.blogdemo.core.posting.port.PostRepositoryPort;
 import com.sb02.blogdemo.core.posting.usecase.crud.dto.*;
@@ -18,6 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+
+import static com.sb02.blogdemo.core.posting.exception.PostErrors.invalidPostAccessError;
+import static com.sb02.blogdemo.core.posting.exception.PostErrors.postNotFoundError;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public RetrievePostResult retrievePostById(UUID postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFound("Post with id " + postId + " not found"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> postNotFoundError(postId));
         String authorNickname = userRepository.findById(post.getAuthorId()).map(User::getNickname).orElse("");
 
         return convertToRetrievePostResult(post, authorNickname);
@@ -82,15 +83,14 @@ public class PostServiceImpl implements PostService {
     }
 
     private Post findPostAndVerifyAccess(UUID postId, String requestUserId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFound("Post with id " + postId + " not found"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> postNotFoundError(postId));
         verifyPostAccess(post, requestUserId);
         return post;
     }
 
     private void verifyPostAccess(Post post, String requestUserId) {
         if (!post.getAuthorId().equals(requestUserId)) {
-            throw new InvalidPostAccess("User not authorized to modify this post");
+            throw invalidPostAccessError(requestUserId);
         }
     }
 
@@ -136,7 +136,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(DeletePostCommand command) {
-        Post post = postRepository.findById(command.postId()).orElseThrow(() -> new PostNotFound("Post with id " + command.postId() + " not found"));
+        Post post = postRepository.findById(command.postId()).orElseThrow(() -> postNotFoundError(command.postId()));
         postImageRepository.retrieveImages(post.getId()).forEach(this::deletePostImage);
         postRepository.delete(post.getId());
     }

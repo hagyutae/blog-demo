@@ -1,12 +1,13 @@
 package com.sb02.blogdemo.core.image.entity;
 
-import com.sb02.blogdemo.core.image.exception.ImageMetaException;
 import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+
+import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageMetaAttributeError;
 
 @Getter
 public class ImageMeta implements Serializable {
@@ -72,7 +73,7 @@ public class ImageMeta implements Serializable {
         public static void validateFileName(String fileName) {
             String fileNameWithoutExtension = extractOriginalName(fileName);
             if (fileNameWithoutExtension.isBlank()) {
-                throw new ImageMetaException("file name must not be empty");
+                throw invalidImageMetaAttributeError("filename", "null or blank value not allowed");
             }
         }
 
@@ -87,7 +88,7 @@ public class ImageMeta implements Serializable {
                     return;
                 }
             }
-            throw new ImageMetaException("extension not allowed: " + extension);
+            throw invalidImageMetaAttributeError("extension", "not allowed: " + extension);
         }
     }
 

@@ -1,13 +1,11 @@
 package com.sb02.blogdemo.core.image.usecase;
 
 import com.sb02.blogdemo.core.image.entity.ImageMeta;
-import com.sb02.blogdemo.core.image.exception.ImageFileError;
+import com.sb02.blogdemo.core.image.port.ImageFileInfo;
 import com.sb02.blogdemo.core.image.port.ImageFileStoragePort;
 import com.sb02.blogdemo.core.image.port.ImageMetaRepositoryPort;
-import com.sb02.blogdemo.core.image.port.ImageFileInfo;
 import com.sb02.blogdemo.core.image.usecase.dto.SaveImageCommand;
 import com.sb02.blogdemo.core.image.usecase.dto.SaveImageResult;
-import com.sb02.blogdemo.core.posting.exception.PostImageLostError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.sb02.blogdemo.core.image.exception.ImageErrors.imageNotFoundError;
+import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageFileError;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class ImageServiceImpl implements ImageService {
 
         ImageMeta imageMeta = ImageMeta.create(
                 Optional.ofNullable(fileObj.getOriginalFilename())
-                        .orElseThrow(() -> new ImageFileError("Original filename cannot be null")),
+                        .orElseThrow(() -> invalidImageFileError("original filename cannot be null")),
                 null,
                 fileObj.getSize()
         );
@@ -55,7 +56,7 @@ public class ImageServiceImpl implements ImageService {
                 .orElse(false);
 
         if (!imageFileFound) {
-            throw new PostImageLostError("Image file not found");
+            throw imageNotFoundError(imageId);
         }
 
         return true;

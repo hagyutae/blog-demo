@@ -1,7 +1,5 @@
 package com.sb02.blogdemo.adapter.outbound.image;
 
-import com.sb02.blogdemo.core.image.exception.ImageFileError;
-import com.sb02.blogdemo.core.image.exception.ImageUploadDirectoryError;
 import com.sb02.blogdemo.core.image.port.ImageFileInfo;
 import com.sb02.blogdemo.core.image.port.ImageFileStoragePort;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +14,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageFileError;
+import static com.sb02.blogdemo.core.image.exception.ImageErrors.invalidImageUploadDirectoryError;
 
 @Component
 public class LocalFileStorage implements ImageFileStoragePort {
@@ -32,7 +33,7 @@ public class LocalFileStorage implements ImageFileStoragePort {
             try {
                 Files.createDirectories(uploadDirPath);
             } catch (IOException e) {
-                throw new ImageUploadDirectoryError(e.getMessage());
+                throw invalidImageUploadDirectoryError(e.getMessage());
             }
         }
     }
@@ -40,7 +41,7 @@ public class LocalFileStorage implements ImageFileStoragePort {
     @Override
     public ImageFileInfo saveImageFile(UUID imageId, MultipartFile multipartFile) {
         if (multipartFile.isEmpty()) {
-            throw new ImageFileError("Empty file");
+            throw invalidImageFileError("empty file");
         }
 
         String storedFileName = imageId + "-" + multipartFile.getOriginalFilename();
@@ -49,7 +50,7 @@ public class LocalFileStorage implements ImageFileStoragePort {
             Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
             return createFilePath(storedFileName);
         } catch (IOException e) {
-            throw new ImageFileError(e.getMessage());
+            throw invalidImageFileError(e.getMessage());
         }
     }
 
@@ -74,7 +75,7 @@ public class LocalFileStorage implements ImageFileStoragePort {
             try {
                 Files.delete(path);
             } catch (IOException e) {
-                throw new ImageFileError(e.getMessage());
+                throw invalidImageFileError(e.getMessage());
             }
         }
     }

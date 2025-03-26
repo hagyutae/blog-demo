@@ -2,7 +2,6 @@ package com.sb02.blogdemo.core.posting.usecase.crud;
 
 import com.sb02.blogdemo.core.image.usecase.FindImageUseCase;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
-import com.sb02.blogdemo.core.posting.exception.InvalidPostImageError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +10,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.sb02.blogdemo.core.image.exception.ImageErrors.imageNotFoundError;
+import static com.sb02.blogdemo.core.posting.exception.PostErrors.invalidPostImageIdError;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class PostImageParseServiceImpl implements PostImageParseService {
                 UUID imageId = UUID.fromString(imageIdStr);
                 imageIds.add(imageId);
             } catch (IllegalArgumentException e) {
-                throw new InvalidPostImageError("Invalid image id: " + imageIdStr);
+                throw invalidPostImageIdError(imageIdStr);
             }
         }
 
@@ -45,7 +47,7 @@ public class PostImageParseServiceImpl implements PostImageParseService {
     private void validateImageId(UUID imageId) {
         boolean exists = findImageUseCase.existsById(imageId);
         if (!exists) {
-            throw new InvalidPostImageError("Image not found: " + imageId);
+            throw imageNotFoundError(imageId);
         }
     }
 }

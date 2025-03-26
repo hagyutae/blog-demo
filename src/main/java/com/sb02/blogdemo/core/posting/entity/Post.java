@@ -1,6 +1,5 @@
 package com.sb02.blogdemo.core.posting.entity;
 
-import com.sb02.blogdemo.core.posting.exception.InvalidPostError;
 import lombok.Getter;
 
 import java.io.Serial;
@@ -8,6 +7,8 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static com.sb02.blogdemo.core.posting.exception.PostErrors.invalidPostAttributeError;
 
 @Getter
 public class Post implements Serializable {
@@ -77,31 +78,31 @@ public class Post implements Serializable {
 
         public static void validateTitle(String title) {
             if (title == null || title.isBlank()) {
-                throw new InvalidPostError("Title must not be empty");
+                throw invalidPostAttributeError("title", "must not be empty");
             }
         }
 
         public static void validateContent(String content) {
             if (content == null || content.isBlank()) {
-                throw new InvalidPostError("Content must not be empty");
+                throw invalidPostAttributeError("content", "must not be empty");
             }
             if (content.length() < 2 || content.length() > 1000) {
-                throw new InvalidPostError("Content must be between 2 and 1000 characters");
+                throw invalidPostAttributeError("content", "must be between 2 and 1000 characters");
             }
         }
 
         public static void validateTags(List<String> tags) {
             if (tags == null || tags.isEmpty()) {
-                throw new InvalidPostError("Tags must not be empty");
+                throw invalidPostAttributeError("tags", "must not be empty");
             }
 
             for (String tag : tags) {
                 if (tag == null || tag.isBlank()) {
-                    throw new InvalidPostError("Tag must not be empty");
+                    throw invalidPostAttributeError("tags", "must not be empty");
                 }
                 // 영문만 허용, 띄어쓰기 불가
                 if (!tag.matches("^[a-zA-Z]+$")) {
-                    throw new InvalidPostError("Tag must contain only alphabets: " + tag);
+                    throw invalidPostAttributeError("tags", "must contain only alphanumeric characters, [" + tag + "]");
                 }
             }
         }

@@ -1,6 +1,5 @@
-package com.sb02.blogdemo.adapter.inbound.user;
+package com.sb02.blogdemo.adapter.inbound.error;
 
-import com.sb02.blogdemo.adapter.inbound.dto.ErrorResponse;
 import com.sb02.blogdemo.core.user.exception.UserAlreadyExistsError;
 import com.sb02.blogdemo.core.user.exception.UserError;
 import com.sb02.blogdemo.core.user.exception.UserLoginFailedError;
@@ -11,25 +10,25 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class UserControllerAdvice {
+public class UserErrorAdvice {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserControllerAdvice.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserErrorAdvice.class);
 
     @ExceptionHandler(UserAlreadyExistsError.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsError e) {
-        logger.error("UserAlreadyExists handled: ", e);
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsError(UserAlreadyExistsError e) {
+        logger.error("UserAlreadyExistsError handled: ", e);
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(UserLoginFailedError.class)
-    public ResponseEntity<ErrorResponse> handleUserLoginFailed(UserLoginFailedError e) {
-        logger.error("UserLoginFailed handled: ", e);
+    public ResponseEntity<ErrorResponse> handleUserLoginFailedError(UserLoginFailedError e) {
+        logger.error("UserLoginFailedError handled: ", e);
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(UserError.class)
-    public ResponseEntity<ErrorResponse> handleUserException(UserError e) {
-        logger.error("UserException handled: ", e);
+    public ResponseEntity<ErrorResponse> handleUserError(UserError e) {
+        logger.error("UserError handled: ", e);
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 }
