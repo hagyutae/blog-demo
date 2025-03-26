@@ -45,21 +45,15 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public boolean existsById(UUID imageId) {
-        Optional<ImageMeta> imageMetaOptional = imageMetaRepository.findById(imageId);
-        if (imageMetaOptional.isEmpty()) {
-            return false;
-        }
-
-        boolean imageFileFound = imageMetaOptional.map(ImageMeta::getPath)
-                .map(imageFileStorage::findImageFile)
-                .map(Optional::isPresent)
+        return imageMetaRepository.findById(imageId)
+                .map(imageMeta -> {
+                    boolean fileExists = imageFileStorage.findImageFile(imageMeta.getPath()).isPresent();
+                    if (!fileExists) {
+                        throw imageNotFoundError(imageId);
+                    }
+                    return true;
+                })
                 .orElse(false);
-
-        if (!imageFileFound) {
-            throw imageNotFoundError(imageId);
-        }
-
-        return true;
     }
 
     @Override

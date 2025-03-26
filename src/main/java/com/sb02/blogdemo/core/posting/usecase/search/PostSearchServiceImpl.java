@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,36 +26,60 @@ public class PostSearchServiceImpl implements PostSearchService {
     public RetrievePostsResult searchByKeyword(SearchPostByKeywordCommand command) {
         String keyword = command.keyword().toLowerCase();
 
-        List<Post> retrievedPosts = postRepository.findAll().stream()
-                .filter(post -> postContainsKeyword(post, keyword))
-                .toList();
-
-        return getRetrievePostsResult(retrievedPosts, command.page(), command.size());
-    }
-
-    private boolean postContainsKeyword(Post post, String keyword) {
-        return post.getTitle().toLowerCase().contains(keyword) || post.getContent().toLowerCase().contains(keyword);
-    }
-
-    private RetrievePostsResult getRetrievePostsResult(List<Post> retrievedPosts, long page, long size) {
-        List<RetrievePostResult> retrievePostResults = retrievedPosts.stream()
-                .skip(page * size)
-                .limit(size)
-                .map(this::convertToRetrievePostResult)
-                .toList();
-
-        int totalPages = (int) Math.ceil((double) retrievedPosts.size() / (double) size);
-
-        return new RetrievePostsResult(
-                retrievePostResults,
-                page,
-                size,
-                totalPages
+        return searchPosts(
+                post -> post.getTitle().toLowerCase().contains(keyword) ||
+                        post.getContent().toLowerCase().contains(keyword),
+                command.page(),
+                command.size()
         );
     }
 
-    private RetrievePostResult convertToRetrievePostResult(Post post) {
-        String authorNickname = userRepository.findById(post.getAuthorId()).map(User::getNickname).orElse("");
+    @Override
+    public RetrievePostsResult searchByTag(SearchPostByTagCommand command) {
+        String tag = command.tag().toLowerCase();
+
+        return searchPosts(
+                post -> post.getTags().stream()
+                        .map(String::toLowerCase)
+                        .anyMatch(t -> t.equals(tag)),
+                command.page(),
+                command.size()
+        );
+    }
+
+    private RetrievePostsResult searchPosts(Predicate<Post> filter, long page, long size) {
+        return postRepository.findAll().stream()
+                .filter(filter)
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        posts -> paginateAndConvert(posts, page, size)
+                ));
+    }
+
+    private RetrievePostsResult paginateAndConvert(List<Post> posts, long page, long size) {
+        List<RetrievePostResult> pageResults = posts.stream()
+                .skip(page * size)
+                .limit(size)
+                .map(this::toRetrievePostResult)
+                .toList();
+
+        long totalPages = calculateTotalPages(posts.size(), size);
+
+        return new RetrievePostsResult(pageResults, page, size, totalPages);
+    }
+
+    private long calculateTotalPages(int itemCount, long pageSize) {
+        return (long) Math.ceil((double) itemCount / pageSize);
+    }
+
+    private RetrievePostResult toRetrievePostResult(Post post) {
+        return userRepository.findById(post.getAuthorId())
+                .map(User::getNickname)
+                .map(nickname -> createPostResult(post, nickname))
+                .orElseGet(() -> createPostResult(post, ""));
+    }
+
+    private RetrievePostResult createPostResult(Post post, String authorNickname) {
         return new RetrievePostResult(
                 post.getId(),
                 post.getTitle(),
@@ -64,20 +90,5 @@ public class PostSearchServiceImpl implements PostSearchService {
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );
-    }
-
-    @Override
-    public RetrievePostsResult searchByTag(SearchPostByTagCommand command) {
-        String tag = command.tag().toLowerCase();
-
-        List<Post> retrievedPosts = postRepository.findAll().stream()
-                .filter(post -> postHasTag(post, tag))
-                .toList();
-
-        return getRetrievePostsResult(retrievedPosts, command.page(), command.size());
-    }
-
-    private boolean postHasTag(Post post, String tag) {
-        return post.getTags().stream().anyMatch(t -> t.toLowerCase().equals(tag));
     }
 }
