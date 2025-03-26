@@ -1,7 +1,6 @@
 package com.sb02.blogdemo.core.posting.usecase.crud;
 
 
-import com.sb02.blogdemo.adapter.outbound.user.UserRepository;
 import com.sb02.blogdemo.core.image.usecase.ImageService;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.entity.PostImage;
@@ -9,10 +8,11 @@ import com.sb02.blogdemo.core.posting.exception.InvalidPostAccess;
 import com.sb02.blogdemo.core.posting.exception.PostNotFound;
 import com.sb02.blogdemo.core.posting.port.PostImageRepositoryPort;
 import com.sb02.blogdemo.core.posting.port.PostRepositoryPort;
+import com.sb02.blogdemo.core.posting.usecase.crud.dto.*;
 import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostResult;
 import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostsResult;
-import com.sb02.blogdemo.core.posting.usecase.crud.dto.*;
 import com.sb02.blogdemo.core.user.entity.User;
+import com.sb02.blogdemo.core.user.port.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ public class PostServiceImpl implements PostService {
     private final PostImageParseService postImageParseService;
     private final PostRepositoryPort postRepository;
     private final PostImageRepositoryPort postImageRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final ImageService imageService;
 
     @Override

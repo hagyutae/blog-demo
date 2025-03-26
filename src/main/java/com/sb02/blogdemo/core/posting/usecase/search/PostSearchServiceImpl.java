@@ -1,6 +1,5 @@
 package com.sb02.blogdemo.core.posting.usecase.search;
 
-import com.sb02.blogdemo.adapter.outbound.user.UserRepository;
 import com.sb02.blogdemo.core.posting.entity.Post;
 import com.sb02.blogdemo.core.posting.port.PostRepositoryPort;
 import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostResult;
@@ -8,6 +7,7 @@ import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostsResult;
 import com.sb02.blogdemo.core.posting.usecase.search.dto.SearchPostByKeywordCommand;
 import com.sb02.blogdemo.core.posting.usecase.search.dto.SearchPostByTagCommand;
 import com.sb02.blogdemo.core.user.entity.User;
+import com.sb02.blogdemo.core.user.port.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +18,7 @@ import java.util.List;
 public class PostSearchServiceImpl implements PostSearchService {
 
     private final PostRepositoryPort postRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
     @Override
     public RetrievePostsResult searchByKeyword(SearchPostByKeywordCommand command) {
