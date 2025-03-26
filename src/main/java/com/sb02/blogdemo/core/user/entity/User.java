@@ -1,13 +1,14 @@
 package com.sb02.blogdemo.core.user.entity;
 
 import com.sb02.blogdemo.core.user.PasswordUtil;
-import com.sb02.blogdemo.core.user.exception.UserRegisterException;
 import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
+
+import static com.sb02.blogdemo.core.user.exception.UserErrors.userRegisterFailedError;
 
 @Getter
 public class User implements Serializable {
@@ -44,7 +45,7 @@ public class User implements Serializable {
         try {
             return PasswordUtil.encryptPassword(password);
         } catch (IllegalArgumentException e) {
-            throw new UserRegisterException("Register failed, password encryption failed");
+            throw userRegisterFailedError("password encryption failed");
         }
     }
 
@@ -79,39 +80,39 @@ public class User implements Serializable {
 
         public static void validateId(String id) {
             if (id == null) {
-                throw new UserRegisterException("Register failed, empty id");
+                throw userRegisterFailedError("id is null");
             }
             if (id.length() < 6 || id.length() > 30) {
-                throw new UserRegisterException("Register failed, invalid id");
+                throw userRegisterFailedError("invalid id length");
             }
         }
 
         public static void validatePassword(String password) {
             if (password == null) {
-                throw new UserRegisterException("Register failed, empty password");
+                throw userRegisterFailedError("password is null");
             }
             // 비밀번호: 12-50글자, 영문/숫자/특수문자(!@#$%^&*) 각 2글자 이상 포함
             String regex = "^(?=(?:.*[a-zA-Z]){2,})(?=(?:.*[0-9]){2,})(?=(?:.*[!@#$%^&*]){2,}).{12,50}$";
             if (!password.matches(regex)) {
-                throw new UserRegisterException("Register failed, invalid password");
+                throw userRegisterFailedError("invalid password");
             }
         }
 
         public static void validateEmail(String email) {
             if (email == null) {
-                throw new UserRegisterException("Register failed, empty email");
+                throw userRegisterFailedError("email is null");
             }
             if (email.length() > 100 || !email.contains("@")) {
-                throw new UserRegisterException("Register failed, invalid email");
+                throw userRegisterFailedError("invalid email");
             }
         }
 
         public static void validateNickname(String nickname) {
             if (nickname == null) {
-                throw new UserRegisterException("Register failed, empty nickname");
+                throw userRegisterFailedError("nickname is null");
             }
             if (nickname.length() < 3 || nickname.length() > 50) {
-                throw new UserRegisterException("Register failed, invalid nickname");
+                throw userRegisterFailedError("invalid nickname");
             }
         }
     }

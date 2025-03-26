@@ -1,9 +1,9 @@
 package com.sb02.blogdemo.adapter.inbound.user;
 
 import com.sb02.blogdemo.adapter.inbound.dto.ErrorResponse;
-import com.sb02.blogdemo.core.user.exception.UserAlreadyExists;
-import com.sb02.blogdemo.core.user.exception.UserException;
-import com.sb02.blogdemo.core.user.exception.UserLoginFailed;
+import com.sb02.blogdemo.core.user.exception.UserAlreadyExistsError;
+import com.sb02.blogdemo.core.user.exception.UserError;
+import com.sb02.blogdemo.core.user.exception.UserLoginFailedError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -15,20 +15,20 @@ public class UserControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(UserControllerAdvice.class);
 
-    @ExceptionHandler(UserAlreadyExists.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExists e) {
+    @ExceptionHandler(UserAlreadyExistsError.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsError e) {
         logger.error("UserAlreadyExists handled: ", e);
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
-    @ExceptionHandler(UserLoginFailed.class)
-    public ResponseEntity<ErrorResponse> handleUserLoginFailed(UserLoginFailed e) {
+    @ExceptionHandler(UserLoginFailedError.class)
+    public ResponseEntity<ErrorResponse> handleUserLoginFailed(UserLoginFailedError e) {
         logger.error("UserLoginFailed handled: ", e);
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
-    @ExceptionHandler(UserException.class)
-    public ResponseEntity<ErrorResponse> handleUserException(UserException e) {
+    @ExceptionHandler(UserError.class)
+    public ResponseEntity<ErrorResponse> handleUserException(UserError e) {
         logger.error("UserException handled: ", e);
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
