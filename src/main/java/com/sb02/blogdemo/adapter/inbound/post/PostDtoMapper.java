@@ -1,11 +1,11 @@
 package com.sb02.blogdemo.adapter.inbound.post;
 
 import com.sb02.blogdemo.adapter.inbound.post.dto.*;
-import com.sb02.blogdemo.core.posting.usecase.crud.dto.PublishPostCommand;
-import com.sb02.blogdemo.core.posting.usecase.crud.dto.PublishPostResult;
-import com.sb02.blogdemo.core.posting.usecase.crud.dto.UpdatePostCommand;
-import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostResult;
-import com.sb02.blogdemo.core.posting.usecase.dto.RetrievePostsResult;
+import com.sb02.blogdemo.core.post.usecase.crud.dto.PublishPostCommand;
+import com.sb02.blogdemo.core.post.usecase.crud.dto.PublishPostResult;
+import com.sb02.blogdemo.core.post.usecase.crud.dto.UpdatePostCommand;
+import com.sb02.blogdemo.core.post.usecase.dto.RetrievePostResult;
+import com.sb02.blogdemo.core.post.usecase.dto.RetrievePostsResult;
 import com.sb02.blogdemo.utils.TimeUtils;
 
 import java.util.UUID;

@@ -1,8 +1,8 @@
 package com.sb02.blogdemo.adapter.outbound.post;
 
 import com.sb02.blogdemo.adapter.outbound.SimpleFileRepository;
-import com.sb02.blogdemo.core.posting.entity.PostImage;
-import com.sb02.blogdemo.core.posting.port.PostImageRepositoryPort;
+import com.sb02.blogdemo.core.post.entity.PostImage;
+import com.sb02.blogdemo.core.post.port.PostImageRepositoryPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 

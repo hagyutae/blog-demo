@@ -1,8 +1,8 @@
 package com.sb02.blogdemo.adapter.inbound.error;
 
-import com.sb02.blogdemo.core.posting.exception.InvalidPostAccessError;
-import com.sb02.blogdemo.core.posting.exception.PostError;
-import com.sb02.blogdemo.core.posting.exception.PostNotFoundError;
+import com.sb02.blogdemo.core.post.exception.InvalidPostAccessError;
+import com.sb02.blogdemo.core.post.exception.PostError;
+import com.sb02.blogdemo.core.post.exception.PostNotFoundError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
